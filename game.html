@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Amazing coinflip game!</title>
+   <meta charset="utf-8"/>
+   <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script>
+        // Request the service to set the resolution of the
+        // iframe correspondingly
+        var message =  {
+        messageType: "SETTING",
+        options: {
+      	    "width": 700, //Integer
+            "height": 300 //Integer
+        }
+        };
+        window.parent.postMessage(message, "*");
+
+        var betTails = 0;
+        var betHeads = 0;
+        var score = 100;
+
+        function flipCoin() {
+            var ran = Math.random();
+            if(ran > 0.5){
+                document.getElementById("coin").innerHTML = "Tails!";
+                result(0);
+            }
+            else{
+                document.getElementById("coin").innerHTML = "Heads!";
+                result(1);
+            }
+        }
+        function result(value){
+            if(value == 1){
+                if(betHeads > 0){
+                    score += betHeads *2;
+                }
+                else{
+                    score -= betTails;
+                }
+                if(score > 0){
+                    document.getElementById("bet").innerHTML = "";
+                    document.getElementById("money").innerHTML = score + "MEGACOINS!";
+                }
+                else{
+                    document.getElementById("bet").innerHTML = "";
+                    document.getElementById("money").innerHTML = "You are broke!";
+                }
+            }
+            if(value == 0){
+                if(betTails > 0){
+                score += betTails *2;
+            }
+            else{
+                score -= betHeads;
+            }
+            if(score > 0){
+                document.getElementById("bet").innerHTML = "";
+                document.getElementById("money").innerHTML = score + "MEGACOINS!";
+            }
+            else{
+                document.getElementById("bet").innerHTML = "";
+                document.getElementById("money").innerHTML = "You are broke!";
+            }
+        }
+        betTails = 0;
+        betHeads = 0;
+    }
+function tails(){
+	if (betHeads == 0 && betTails < score){
+    	betTails += 10;
+        document.getElementById("bet").innerHTML = betTails + "for tails!";
+    }
+}
+
+function heads(){
+	if (betTails == 0 && betHeads < score){
+    	betHeads += 10;
+        document.getElementById("bet").innerHTML = betHeads + " for heads!";
+    }
+}
+function lower(){
+	if(betTails > 0){
+    	betTails -= 10;
+        document.getElementById("bet").innerHTML = betTails + "for tails!";
+        }
+    if(betHeads > 0){
+    	betHeads -= 10;
+        document.getElementById("bet").innerHTML = betHeads + " for heads!";
+        }
+}
+
+    function submit(){
+        var msg = {
+            "messageType": "SCORE",
+            "score": parseFloat($("#score").text())
+        };
+        window.parent.postMessage(msg, "*");
+    }
+    function load(){
+        var msg = {
+        "messageType": "LOAD_REQUEST",
+      };
+      window.parent.postMessage(msg, "*");
+    }
+
+    function save(){
+        var msg = {
+            "messageType": "SAVE",
+            "gameState":{
+                "score":parseFloat($("#score").text())
+            } 
+        };
+        window.parent.postMessage(msg, "*");
+    }
+     window.addEventListener("message", function(evt) {
+      if(evt.data.messageType === "LOAD") {
+        score = evt.data.gameState.score;
+        document.getElementById("money").innerHTML = score + "MEGACOINS!";
+      } else if (evt.data.messageType === "ERROR") {
+        alert(evt.data.info);
+      }
+    });
+</script>
+<body>
+
+<h1>Make your bet!</h1>
+<button onClick="tails()">Bet on tails!</button>
+<button onClick="heads()">Bet on Heads!</button>
+<p id="bet">You need to click on buttons to make a bet!</p>
+<button onClick="lower()">Lower your bet</button>
+</br>
+<button onclick="flipCoin()">Flip a coin!</button>
+
+<p id="coin"></p>
+
+<h2>Your balance:</h2>
+<p id="money">100</p>
+
+<button onClick="submit">Submit score</button><br>
+<button onClick="save">Save</button>
+<button onClick="load">Load</button>
+</body>
+</html>
